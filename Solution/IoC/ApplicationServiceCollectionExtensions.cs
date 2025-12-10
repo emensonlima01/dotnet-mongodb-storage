@@ -17,6 +17,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<ReceivePaymentUseCase>();
         services.AddScoped<GetPaymentUseCase>();
         services.AddScoped<CancelPaymentUseCase>();
+        services.AddScoped<GetPaymentsPagedUseCase>();
 
         return services;
     }

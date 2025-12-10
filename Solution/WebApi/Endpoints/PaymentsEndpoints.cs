@@ -19,6 +19,9 @@ public static class PaymentsEndpoints
 
         group.MapPut("/{id}/cancel", CancelPayment)
             .WithName("CancelPayment");
+
+        group.MapGet("/", GetPaymentsPaged)
+            .WithName("GetPaymentsPaged");
     }
 
     private static async Task<IResult> ReceivePayment(
@@ -46,5 +49,30 @@ public static class PaymentsEndpoints
         [FromServices] CancelPaymentUseCase useCase)
     {
         return Results.Accepted();
+    }
+
+    private static async Task<IResult> GetPaymentsPaged(
+        [FromServices] GetPaymentsPagedUseCase useCase,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        if (pageNumber < 1)
+            return Results.BadRequest(new { message = "Page number must be greater than 0" });
+
+        if (pageSize < 1 || pageSize > 100)
+            return Results.BadRequest(new { message = "Page size must be between 1 and 100" });
+
+        var start = startDate ?? DateTime.UtcNow.AddDays(-30);
+        var end = endDate ?? DateTime.UtcNow;
+
+        if (start > end)
+            return Results.BadRequest(new { message = "Start date must be before end date" });
+
+        var request = new GetPaymentsPagedRequest(start, end, pageNumber, pageSize);
+        var result = await useCase.Handle(request);
+
+        return Results.Ok(result);
     }
 }
