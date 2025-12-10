@@ -1,27 +1,37 @@
 using Domain.Entities;
 using Domain.Repositories;
+using Infrastructure.Configuration;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Infrastructure.Repositories;
 
 public class PaymentRepository : IPaymentRepository
 {
-    private readonly Dictionary<Guid, Payment> _storage = new();
+    private readonly IMongoCollection<Payment> _paymentsCollection;
 
-    public Task<Payment> SaveAsync(Payment payment)
+    public PaymentRepository(IMongoClient mongoClient, IOptions<MongoDbSettings> settings)
     {
-        _storage[payment.Id] = payment;
-        return Task.FromResult(payment);
+        var database = mongoClient.GetDatabase(settings.Value.DatabaseName);
+        _paymentsCollection = database.GetCollection<Payment>(settings.Value.PaymentsCollectionName);
     }
 
-    public Task<Payment?> GetByIdAsync(Guid id)
+    public async Task<Payment> SaveAsync(Payment payment)
     {
-        _storage.TryGetValue(id, out var payment);
-        return Task.FromResult(payment);
+        await _paymentsCollection.InsertOneAsync(payment);
+        return payment;
     }
 
-    public Task<Payment> UpdateAsync(Payment payment)
+    public async Task<Payment?> GetByIdAsync(Guid id)
     {
-        _storage[payment.Id] = payment;
-        return Task.FromResult(payment);
+        var filter = Builders<Payment>.Filter.Eq(p => p.Id, id);
+        return await _paymentsCollection.Find(filter).FirstOrDefaultAsync();
+    }
+
+    public async Task<Payment> UpdateAsync(Payment payment)
+    {
+        var filter = Builders<Payment>.Filter.Eq(p => p.Id, payment.Id);
+        await _paymentsCollection.ReplaceOneAsync(filter, payment);
+        return payment;
     }
 }
