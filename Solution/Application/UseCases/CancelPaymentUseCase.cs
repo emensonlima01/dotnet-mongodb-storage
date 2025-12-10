@@ -19,6 +19,7 @@ public class CancelPaymentUseCase(IPaymentRepository paymentRepository)
 
         return new PaymentResponse(
             result.Id,
+            result.ClientIdentifier,
             result.Amount,
             result.Description,
             result.CreatedAt,

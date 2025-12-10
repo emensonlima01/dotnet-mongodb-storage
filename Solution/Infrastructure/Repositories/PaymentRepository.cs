@@ -29,6 +29,12 @@ public class PaymentRepository : IPaymentRepository
         return await _paymentsCollection.Find(filter).FirstOrDefaultAsync();
     }
 
+    public async Task<Payment?> GetByClientIdentifierAsync(string clientIdentifier)
+    {
+        var filter = Builders<Payment>.Filter.Eq(p => p.ClientIdentifier, clientIdentifier);
+        return await _paymentsCollection.Find(filter).FirstOrDefaultAsync();
+    }
+
     public async Task<Payment> UpdateAsync(Payment payment)
     {
         var filter = Builders<Payment>.Filter.Eq(p => p.Id, payment.Id);

@@ -17,6 +17,7 @@ public class GetPaymentsPagedUseCase(IPaymentRepository paymentRepository)
         var paymentResponses = pagedResult.Items
             .Select(p => new PaymentResponse(
                 p.Id,
+                p.ClientIdentifier,
                 p.Amount,
                 p.Description,
                 p.CreatedAt,

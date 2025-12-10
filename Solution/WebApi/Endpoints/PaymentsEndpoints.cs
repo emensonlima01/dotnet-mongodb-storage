@@ -28,7 +28,11 @@ public static class PaymentsEndpoints
         [FromBody] ReceivePaymentRequest request,
         [FromServices] ReceivePaymentUseCase useCase)
     {
-        await useCase.Handle(request);
+        var error = await useCase.Handle(request);
+        
+        if (error != null)
+            return Results.Conflict(new { message = error });
+
         return Results.Accepted();
     }
 

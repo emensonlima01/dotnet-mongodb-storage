@@ -14,6 +14,7 @@ public class GetPaymentUseCase(IPaymentRepository paymentRepository)
 
         return new PaymentResponse(
             payment.Id,
+            payment.ClientIdentifier,
             payment.Amount,
             payment.Description,
             payment.CreatedAt,
