@@ -21,13 +21,22 @@ public static class InfrastructureServiceCollectionExtensions
     private static IServiceCollection AddMongoDb(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<MongoDbSettings>(
-            configuration.GetSection("MongoDbSettings"));
+            configuration.GetSection(MongoDbSettings.SectionName));
 
         services.AddSingleton<IMongoClient>(sp =>
         {
-            var settings = configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>()
+            var settings = configuration.GetSection(MongoDbSettings.SectionName).Get<MongoDbSettings>()
                 ?? throw new InvalidOperationException("MongoDbSettings not found in configuration");
-            
+
+            if (string.IsNullOrWhiteSpace(settings.ConnectionString))
+                throw new InvalidOperationException("MongoDb connection string not found");
+
+            if (string.IsNullOrWhiteSpace(settings.DatabaseName))
+                throw new InvalidOperationException("MongoDb database name not found");
+
+            if (string.IsNullOrWhiteSpace(settings.PaymentsCollectionName))
+                throw new InvalidOperationException("MongoDb payments collection name not found");
+
             return new MongoClient(settings.ConnectionString);
         });
         

@@ -52,7 +52,12 @@ public static class PaymentsEndpoints
         [FromRoute] Guid id,
         [FromServices] CancelPaymentUseCase useCase)
     {
-        return Results.Accepted();
+        var payment = await useCase.Handle(id);
+
+        if (payment == null)
+            return Results.NotFound(new { message = "Payment not found" });
+
+        return Results.Ok(payment);
     }
 
     private static async Task<IResult> GetPaymentsPaged(
